@@ -40,9 +40,9 @@ public class TodoController {
 	}
 	
 	@PostMapping()
-	public void newTodo(@RequestBody Todo todo)
+	public Todo newTodo(@RequestBody Todo todo)
 	{
-		todoService.newTodo(todo);
+		return todoService.newTodo(todo);
 	}
 	
 	@DeleteMapping(path = "{todoId}")

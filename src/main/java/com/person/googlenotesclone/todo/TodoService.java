@@ -33,8 +33,8 @@ public class TodoService {
 		return todoRepository.findById(todoId);
 	}
 
-	public void newTodo(Todo todo) {
-		todoRepository.save(todo);
+	public Todo newTodo(Todo todo) {
+		return todoRepository.save(todo);
 	}
 
 	public void deleteTodo(Long todoId) {

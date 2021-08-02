@@ -3,6 +3,8 @@ package com.person.googlenotesclone;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
@@ -26,7 +28,6 @@ import com.person.googlenotesclone.todo.TodoService;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers  = TodoController.class)
-@AutoConfigureMockMvc(addFilters = true)
 class GooglenotescloneApplicationTests {
 
 	@MockBean
@@ -36,23 +37,45 @@ class GooglenotescloneApplicationTests {
 	private MockMvc mvc;
 
 	@Test
-	@DisplayName("Should get all the todos from GET Endpoint - /api/v1/to")
+	@DisplayName("Should get all the todos from GET Endpoint - /api/v1/todo")
 	public void testTodo() throws Exception
 	{
-		Todo todo = new Todo(1L,"Test1","I'm the first test");
-		Todo todo2 = new Todo(2L,"Test2","I'm the second test");
+		when(service.getTodos()).thenReturn(Stream.of(new Todo(1L,"Hey there","test"),
+				new Todo(2L,"Hey there","test2")).collect(Collectors.toList()));
 		
-		when(service.getTodos()).thenReturn(Arrays.asList(todo,todo2));
-		
-		mvc.perform(MockMvcRequestBuilders.get("/api/v1/todo"))
+		mvc.perform(MockMvcRequestBuilders.get("/api/v1/todo")
+		.contentType(MediaType.APPLICATION_JSON)
+		.accept(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.status().isOk())
-		.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 		.andExpect(MockMvcResultMatchers.jsonPath("$.size()", Matchers.is(2)))
 		.andExpect(MockMvcResultMatchers.jsonPath("$[0].id", Matchers.is(1L)))
-		.andExpect(MockMvcResultMatchers.jsonPath("$[0].title", Matchers.is("Test1")))
-		.andExpect(MockMvcResultMatchers.jsonPath("$[0].description", Matchers.is("I'm the first test")))
+		.andExpect(MockMvcResultMatchers.jsonPath("$[0].title", Matchers.is("Hey there")))
+		.andExpect(MockMvcResultMatchers.jsonPath("$[0].description", Matchers.is("test")))
 		.andExpect(MockMvcResultMatchers.jsonPath("$[1].id", Matchers.is(2L)))
-		.andExpect(MockMvcResultMatchers.jsonPath("$[1].title", Matchers.is("Test2")))
-		.andExpect(MockMvcResultMatchers.jsonPath("$[1].description", Matchers.is("I'm the second test")));	
+		.andExpect(MockMvcResultMatchers.jsonPath("$[1].title", Matchers.is("Hey there")))
+		.andExpect(MockMvcResultMatchers.jsonPath("$[1].description", Matchers.is("test2")));	
+	}
+	
+	@Test
+	@DisplayName("Should get all the todos from POST Endpoint - /api/v1/todo")
+	public void testNewTodo() throws Exception
+	{
+		Todo todo = new Todo(1L,"Test1","I'm the first test");
+		
+		when(service.newTodo(todo)).thenReturn(todo);
+		
+		mvc.perform(MockMvcRequestBuilders.post("/api/v1/todo")
+		.contentType(MediaType.APPLICATION_JSON)
+		.accept(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.status().isOk())
+		.andExpect(MockMvcResultMatchers.jsonPath("$id", Matchers.is(1L)))
+		.andExpect(MockMvcResultMatchers.jsonPath("$title", Matchers.is("Test1")))
+		.andExpect(MockMvcResultMatchers.jsonPath("$description", Matchers.is("I'm the first test")));
+	}
+	
+	@Test
+	public void testGetTodo()
+	{
+		
 	}
 }

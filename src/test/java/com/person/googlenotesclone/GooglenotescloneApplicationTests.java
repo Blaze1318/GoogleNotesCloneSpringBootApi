@@ -1,83 +1,58 @@
 package com.person.googlenotesclone;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
+
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.*;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.person.googlenotesclone.todo.Todo;
-import com.person.googlenotesclone.todo.TodoRepository;
+import com.person.googlenotesclone.todo.TodoController;
 import com.person.googlenotesclone.todo.TodoService;
 
 
 
-@ExtendWith(MockitoExtension.class)
-@SpringBootTest
+@RunWith(SpringRunner.class)
+@WebMvcTest(controllers  = TodoController.class)
+@AutoConfigureMockMvc(addFilters = true)
 class GooglenotescloneApplicationTests {
 
-	@Autowired
-	private TodoService todoService;
-	
 	@MockBean
-	private TodoRepository todoRepository;
+	private TodoService service;
 	
-	
-	@Test
-	void contextLoads() {
-	}
-	
-	@Test
-	public void getTodosTest()
-	{
-		when(todoRepository.findAll()).thenReturn(Stream.of(new Todo("Hey there","test"),
-				new Todo("Hey there","test2")).collect(Collectors.toList()));
-		
-		assertEquals(2, todoService.getTodos().size());
-	}
-	
-	@Test
-	public void getTodoTest()
-	{
-		Todo todo = new Todo(3L,"Single Test","test3");
-		Long id = todo.getId();
-		
-		when(todoRepository.findById(id)).thenReturn(Optional.of(todo));
-		
-		//Optional<Todo> returnedTodo = todoService.getTodo(id);
-		
-		assertEquals(todoService.getTodo(id),todo);
-	}
-	
-	@Test
-	public void newTodoTest()
-	{
-		Todo todo = new Todo("Test Create","Test 4");
-		
-		when(todoRepository.save(todo)).thenReturn(todo);
-		
-		assertEquals(todoService.newTodo(todo),todo);
-	}
+	@Autowired
+	private MockMvc mvc;
 
 	@Test
-	public void deleteTodoTest()
+	@DisplayName("Should get all the todos from GET Endpoint - /api/v1/to")
+	public void testTodo() throws Exception
 	{
-		Todo todo = new Todo("Test Create","Test 5");
-		todoService.newTodo(todo);
-		todoService.deleteTodo(todo.getId());
-		verify(todoRepository,times(1)).deleteById(todo.getId());
+		Todo todo = new Todo(1L,"Test1","I'm the first test");
+		Todo todo2 = new Todo(2L,"Test2","I'm the second test");
+		
+		when(service.getTodos()).thenReturn(Arrays.asList(todo,todo2));
+		
+		mvc.perform(MockMvcRequestBuilders.get("/api/v1/todo"))
+		.andExpect(MockMvcResultMatchers.status().isOk())
+		.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+		.andExpect(MockMvcResultMatchers.jsonPath("$.size()", Matchers.is(2)))
+		.andExpect(MockMvcResultMatchers.jsonPath("$[0].id", Matchers.is(1L)))
+		.andExpect(MockMvcResultMatchers.jsonPath("$[0].title", Matchers.is("Test1")))
+		.andExpect(MockMvcResultMatchers.jsonPath("$[0].description", Matchers.is("I'm the first test")))
+		.andExpect(MockMvcResultMatchers.jsonPath("$[1].id", Matchers.is(2L)))
+		.andExpect(MockMvcResultMatchers.jsonPath("$[1].title", Matchers.is("Test2")))
+		.andExpect(MockMvcResultMatchers.jsonPath("$[1].description", Matchers.is("I'm the second test")));	
 	}
-	
-
 }

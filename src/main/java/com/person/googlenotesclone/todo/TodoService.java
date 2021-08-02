@@ -23,28 +23,29 @@ public class TodoService {
 		return todoRepository.findAll();
 	}
 
-	public Optional<Todo> getTodo(Long todoId) {
-		boolean exist = todoRepository.existsById(todoId);
+	public Todo getTodo(Long todoId) {
+		Optional<Todo> todo = todoRepository.findById(todoId);
 		
-		if(!exist)
+		if(!todo.isPresent())
 		{
 			throw new TodoRequestException("ID Not Found");
 		}
-		return todoRepository.findById(todoId);
+		return todo.get();
 	}
 
 	public Todo newTodo(Todo todo) {
 		return todoRepository.save(todo);
 	}
 
-	public void deleteTodo(Long todoId) {
-		boolean exist = todoRepository.existsById(todoId);
+	public Todo deleteTodo(Long todoId) {
+		Optional<Todo> todo = todoRepository.findById(todoId);
 		
-		if(!exist)
+		if(!todo.isPresent())
 		{
 			throw new TodoRequestException("ID Not Found");
 		}
 		todoRepository.deleteById(todoId);
+		return todo.get();
 		
 	}
 

@@ -34,7 +34,7 @@ public class TodoController {
 	}
 	
 	@GetMapping(path ="{todoId}")
-	public Optional<Todo> getTodo(@PathVariable("todoId") Long todoId) 
+	public Todo getTodo(@PathVariable("todoId") Long todoId) 
 	{
 		return todoService.getTodo(todoId);
 	}
@@ -46,9 +46,9 @@ public class TodoController {
 	}
 	
 	@DeleteMapping(path = "{todoId}")
-	public void deleteTodo(@PathVariable("todoId") Long todoId)
+	public Todo deleteTodo(@PathVariable("todoId") Long todoId)
 	{
-		todoService.deleteTodo(todoId);
+		return todoService.deleteTodo(todoId);
 	}
 	
 	@PutMapping(path = "{todoId}")
